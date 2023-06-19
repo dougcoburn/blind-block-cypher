@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.3
+
+### Patch Changes
+
+- 2ca6773: adding vitest and tests; adding release script
+
 ## 0.0.2
 
 ### Patch Changes
