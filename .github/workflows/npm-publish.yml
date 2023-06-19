@@ -5,8 +5,8 @@ name: Publish
 
 on:
   push:
-    braches:
-      - "main
+    branches:
+      - "master"
 
 concurrency: ${{ github.worflow}}-${{ github.ref }}
 
