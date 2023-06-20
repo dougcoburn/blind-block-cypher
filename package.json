@@ -12,8 +12,8 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "ci": "pnpm run lint && pnpm run test && pnpm run build",
     "dev": "vitest",
-    "lint": "prettier . && eslint . && tsc",
-    "lint:fix": "prettier . -w && eslint . --fix && tsc",
+    "lint": "prettier . --check && eslint . && tsc",
+    "lint:fix": "prettier . --write -w && eslint . --fix && tsc",
     "release": "pnpm run lint && pnpm run test && pnpm run build && changeset publish",
     "test": "vitest run --coverage"
   },
