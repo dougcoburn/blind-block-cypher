@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.6
+
+### Patch Changes
+
+- 76b60c2: yml formatting
+
 ## 0.0.5
 
 ### Patch Changes
