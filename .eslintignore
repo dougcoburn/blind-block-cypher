@@ -1,6 +1,7 @@
 !.*
-coverage*
-lib
+coverage
 dist
 node_modules
 pnpm-lock.yaml
+.changeset
+.github
