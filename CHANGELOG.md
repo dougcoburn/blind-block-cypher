@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.5
+
+### Patch Changes
+
+- b6fea08: some base utilities and more setup
+
 ## 0.0.4
 
 ### Patch Changes
