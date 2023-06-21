@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.7
+
+### Patch Changes
+
+- d4565b6: fix what is published to npm
+
 ## 0.0.6
 
 ### Patch Changes
