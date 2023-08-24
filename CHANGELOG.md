@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.8
+
+### Patch Changes
+
+- 85eecfe: updating eslint dependency per transitive dependency dependabot
+
 ## 0.0.7
 
 ### Patch Changes
