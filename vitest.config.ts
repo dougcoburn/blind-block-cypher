@@ -1,4 +1,8 @@
 // vite.config.ts
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -15,4 +19,8 @@ export default defineConfig({
       statements: 100,
     },
   },
-});
+} as any);
+
+/* eslint-enable @typescript-eslint/no-unsafe-call */
+/* eslint-enable @typescript-eslint/no-explicit-any */
+/* eslint-enable @typescript-eslint/no-unsafe-argument */
