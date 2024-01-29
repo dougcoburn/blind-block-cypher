@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.10
+
+### Patch Changes
+
+- a0c3611: prettier dependabot
+
 ## 0.0.9
 
 ### Patch Changes
