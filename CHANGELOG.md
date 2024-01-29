@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.0.9
+
+### Patch Changes
+
+- b04c25c: update dependencies for dependabot -- codesandbox
+
 ## 0.0.8
 
 ### Patch Changes
