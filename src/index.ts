@@ -1,4 +1,4 @@
-export { default as permutation } from "./permutation";
-export { expandKey } from "./expand";
 export type { RoundMaterial } from "./expand";
-export { decrypt, encrypt, RECOMMENDED_ROUNDS } from "./feistel";
+export { expandKey } from "./expand";
+export { RECOMMENDED_ROUNDS, decrypt, encrypt } from "./feistel";
+export { default as permutation } from "./permutation";
