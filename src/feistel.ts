@@ -1,4 +1,4 @@
-import { expandKey, type RoundMaterial } from "./expand";
+import { type RoundMaterial, expandKey } from "./expand";
 import permutation from "./permutation";
 
 /** Recommended Feistel round count for ID obfuscation. */
@@ -24,11 +24,12 @@ function join(left: number, right: number): number {
 function shuffleBits(value16: number, order: number[]): number {
   let out = 0;
   for (let i = 0; i < 16; i += 1) {
-    const src = order[i]!;
+    const src = order[i] ?? 0;
     if ((value16 >>> src) & 1) {
       out |= 1 << i;
     }
   }
+
   return out & 0xffff;
 }
 
@@ -42,7 +43,10 @@ function F(half: number, round: RoundMaterial): number {
   return shuffleBits(masked, order);
 }
 
-function assertKeyAndRounds(key: string | Uint8Array, rounds: number): RoundMaterial[] {
+function assertKeyAndRounds(
+  key: Uint8Array | string,
+  rounds: number
+): RoundMaterial[] {
   return expandKey(key, rounds);
 }
 
@@ -51,7 +55,7 @@ function assertKeyAndRounds(key: string | Uint8Array, rounds: number): RoundMate
  * Rejects empty key and rounds < 1.
  */
 export function encrypt(
-  key: string | Uint8Array,
+  key: Uint8Array | string,
   rounds: number,
   plaintext: number
 ): number {
@@ -59,9 +63,9 @@ export function encrypt(
   let L = left16(plaintext);
   let R = right16(plaintext);
 
-  for (let i = 0; i < material.length; i += 1) {
+  for (const round of material) {
     const nextL = R;
-    const nextR = (L ^ F(R, material[i]!)) & 0xffff;
+    const nextR = (L ^ F(R, round)) & 0xffff;
     L = nextL;
     R = nextR;
   }
@@ -73,7 +77,7 @@ export function encrypt(
  * Decrypt a u32 block. Inverse of encrypt for the same (key, rounds).
  */
 export function decrypt(
-  key: string | Uint8Array,
+  key: Uint8Array | string,
   rounds: number,
   ciphertext: number
 ): number {
@@ -82,8 +86,13 @@ export function decrypt(
   let R = right16(ciphertext);
 
   for (let i = material.length - 1; i >= 0; i -= 1) {
+    const round = material[i];
+    if (round === undefined) {
+      continue;
+    }
+
     const prevR = L;
-    const prevL = (R ^ F(L, material[i]!)) & 0xffff;
+    const prevL = (R ^ F(L, round)) & 0xffff;
     L = prevL;
     R = prevR;
   }

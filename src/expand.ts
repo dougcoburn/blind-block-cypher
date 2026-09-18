@@ -13,20 +13,28 @@ export interface RoundMaterial {
  * Number and covers 16! ≈ 2.09e13).
  */
 export function expandKey(
-  key: string | Uint8Array,
+  key: Uint8Array | string,
   rounds: number
 ): RoundMaterial[] {
-  const ikm = typeof key === "string" ? Buffer.from(key, "utf8") : Buffer.from(key);
+  const ikm =
+    typeof key === "string" ? Buffer.from(key, "utf8") : Buffer.from(key);
   if (ikm.length === 0) {
     throw new Error("key must be non-empty");
   }
+
   if (!Number.isInteger(rounds) || rounds < 1) {
     throw new Error("rounds must be an integer >= 1");
   }
 
   const bytesPerRound = 8; // 2 mask + 6 shuffleId
   const okm = Buffer.from(
-    hkdfSync("sha256", ikm, Buffer.alloc(0), "blind-block-cypher/v1", rounds * bytesPerRound)
+    hkdfSync(
+      "sha256",
+      ikm,
+      Buffer.alloc(0),
+      "blind-block-cypher/v1",
+      rounds * bytesPerRound
+    )
   );
 
   const material: RoundMaterial[] = [];
@@ -36,9 +44,12 @@ export function expandKey(
     // 48-bit big-endian → Number (safe; 16! < 2^53)
     let shuffleId = 0;
     for (let i = 0; i < 6; i += 1) {
-      shuffleId = shuffleId * 256 + okm[o + 2 + i]!;
+      const byte = okm[o + 2 + i] ?? 0;
+      shuffleId = shuffleId * 256 + byte;
     }
+
     material.push({ mask, shuffleId });
   }
+
   return material;
 }
