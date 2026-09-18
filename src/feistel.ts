@@ -24,7 +24,8 @@ function join(left: number, right: number): number {
 function shuffleBits(value16: number, order: number[]): number {
   let out = 0;
   for (let i = 0; i < 16; i += 1) {
-    const src = order[i] ?? 0;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- permutation length
+    const src = order[i]!;
     if ((value16 >>> src) & 1) {
       out |= 1 << i;
     }
@@ -86,11 +87,8 @@ export function decrypt(
   let R = right16(ciphertext);
 
   for (let i = material.length - 1; i >= 0; i -= 1) {
-    const round = material[i];
-    if (round === undefined) {
-      continue;
-    }
-
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop bounds
+    const round = material[i]!;
     const prevR = L;
     const prevL = (R ^ F(L, round)) & 0xffff;
     L = prevL;
