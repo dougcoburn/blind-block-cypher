@@ -44,8 +44,8 @@ export function expandKey(
     // 48-bit big-endian → Number (safe; 16! < 2^53)
     let shuffleId = 0;
     for (let i = 0; i < 6; i += 1) {
-      const byte = okm[o + 2 + i] ?? 0;
-      shuffleId = shuffleId * 256 + byte;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- HKDF length
+      shuffleId = shuffleId * 256 + okm[o + 2 + i]!;
     }
 
     material.push({ mask, shuffleId });

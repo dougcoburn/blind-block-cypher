@@ -9,14 +9,16 @@ export default defineConfig({
   test: {
     coverage: {
       all: true,
-      branches: 100,
       exclude: [],
-      functions: 100,
       include: ["src/**/*.ts"],
-      lines: 100,
       provider: "istanbul",
       reporter: ["text", "json", "html"],
-      statements: 100,
+      thresholds: {
+        branches: 100,
+        functions: 100,
+        lines: 100,
+        statements: 100,
+      },
     },
   },
 } as any);
