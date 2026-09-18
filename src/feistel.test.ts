@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  RECOMMENDED_ROUNDS,
-  decrypt,
-  encrypt,
-  expandKey,
-} from "./index";
+import { RECOMMENDED_ROUNDS, decrypt, encrypt, expandKey } from "./index";
 
 const KEY = "test-key";
 const OTHER_KEY = "other-key";
@@ -91,17 +86,8 @@ describe("encrypt / decrypt", () => {
 
   it("round-trips a sample set (invertibility, not full 2^32)", () => {
     const samples = [
-      0,
-      1,
-      0xffff,
-      0x10000,
-      0x80000000,
-      0xffffffff,
-      0x12345678,
-      0xdeadbeef,
-      0xcafebabe,
-      42,
-      0x7fffffff,
+      0, 1, 0xffff, 0x10000, 0x80000000, 0xffffffff, 0x12345678, 0xdeadbeef,
+      0xcafebabe, 42, 0x7fffffff,
     ];
     // Spread a few more across the space without scanning all u32s.
     for (let i = 0; i < 64; i += 1) {
@@ -115,6 +101,7 @@ describe("encrypt / decrypt", () => {
       expect(decrypt(KEY, RECOMMENDED_ROUNDS, cipher)).toBe(p);
       seen.add(cipher);
     }
+
     expect(seen.size).toBe(new Set(samples.map((s) => s >>> 0)).size);
   });
 
