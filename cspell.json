@@ -1,4 +1,11 @@
 {
   "version": "0.2",
-  "words": ["ciphertext", "cypher", "Feistel", "feistel", "invertibility"]
+  "words": [
+    "ciphertext",
+    "cypher",
+    "Feistel",
+    "feistel",
+    "invertibility",
+    "mulmix"
+  ]
 }
