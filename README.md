@@ -131,7 +131,7 @@ That block is encrypted with a keyed 96-bit Feistel permutation and then encoded
 ### Sequence
 
 - By default the counter starts at a random 53-bit value drawn from `randomBytes`. Pass `sequenceStart` (an integer `0`–`2^53 − 1`) to choose the start yourself.
-- It adds 1 per ID and never resets when the second changes. Near the top of the range it wraps to 0, and it throws only after it has used every value and come back to its start.
+- It adds 1 per ID and never resets when the second changes. Past `2^53 − 1` it wraps to 0. There's no exhaustion guard: it never throws, even if it comes back around to its start.
 - If the clock's seconds drop **strictly below** the last second this generator minted, `generate()` doesn't throw. It keeps minting at that last second, with the counter still advancing, until the clock passes it again. IDs stay unique through a clock step-back.
 - Because of that, `decodeTime` may lag real time during a clock step-back, by up to the size of the step: IDs minted while the clock is behind carry the earlier, pinned second. Measured against the host's stepped-back clock, those IDs look like they're from the future, so `decode(id, { strictTime: true })` may reject them until real time catches up (see the API section below).
 
@@ -167,7 +167,7 @@ ids.decode(id); // { seconds, date, generatorId, sequence }
 | Call / input                 | Behavior                                                                                                                                                                                              |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `createIdGenerator(...)`     | Throws on an empty key. Throws `RangeError` if `generatorId` or `sequenceStart` isn't an integer in range, if `epoch` isn't a valid time on a whole second, or if `maxFutureSkewSeconds` is negative. |
-| `generate()`                 | Throws `RangeError` when the clock is before the epoch or past rollover, and `RangeError('sequence exhausted')` after all 2⁵³ sequences. A clock that goes backward doesn't throw (see Sequence).     |
+| `generate()`                 | Throws `RangeError` when the clock is before the epoch or past rollover. A clock that goes backward doesn't throw (see Sequence).                                                                     |
 | `decode(id)` / `decodeTime`  | Throws `InvalidIdError` unless `id` is exactly 16 characters of `[A-Za-z0-9_-]`.                                                                                                                      |
 | `decode(id, { strictTime })` | Opt-in. Also throws `InvalidIdError` when the decoded time is more than `maxFutureSkewSeconds` past `now()`.                                                                                          |
 | Wrong key                    | **Not detectable.** There is no MAC, so any well-formed ID decodes to _some_ time, generator ID, and sequence under any key.                                                                          |
@@ -180,7 +180,7 @@ Low-level exports for tests and tooling: `createFeistel96(key)` (returns `{ encr
 
 ### Collisions
 
-- **Within one running generator, IDs never repeat.** The counter only repeats after 2⁵³ IDs, at which point it throws, and the cipher is a bijection.
+- **Within one running generator, IDs don't repeat in practice.** The cipher is a bijection, and the counter only comes back to a value it already used after 2⁵³ IDs (about 285 years at a million IDs per second). Even then, an ID repeats only if it's also minted in the same second as the earlier one.
 - **Generators with different `generatorId`s never collide with each other.**
 - **Two generators that share a `generatorId`, or a restart, can repeat IDs.** A restarted process starts a new counter, so it can reuse a `(seconds, generatorId, sequence)` the old process already minted if it mints in the same second, or after its clock fell behind. The random default start makes this unlikely, but not impossible. Pinning to the last minted second can't see across restarts either.
 - **To rule repeats out:** persist the last `sequence` in durable storage (a database, not environment config) and pass `sequenceStart = last + 1` when you restart, and give every concurrent generator its own `generatorId`.

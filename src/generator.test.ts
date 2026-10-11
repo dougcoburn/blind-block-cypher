@@ -6,8 +6,6 @@ import {
   InvalidIdError,
   SEQ_MOD,
   createIdGenerator,
-  createIdGeneratorWithModulus,
-  nextSequence,
 } from "./generator";
 
 const KEY = "generator-test-key-not-for-production";
@@ -28,25 +26,6 @@ function fixedRng(bytes: number[]) {
 function make(opts: IdGeneratorOptions = {}) {
   return createIdGenerator(KEY, { now: () => T0, sequenceStart: 0, ...opts });
 }
-
-describe("nextSequence", () => {
-  it("adds one", () => {
-    expect(nextSequence(0, 0 + 5)).toBe(1);
-    expect(nextSequence(41, 0)).toBe(42);
-  });
-
-  it("wraps 2^53 - 1 to 0", () => {
-    expect(SEQ_MOD).toBe(2 ** 53);
-    expect(nextSequence(2 ** 53 - 1, 5)).toBe(0);
-  });
-
-  it("throws when the next value would be the start", () => {
-    expect(() => nextSequence(4, 5)).toThrow(/sequence exhausted/);
-    expect(() => nextSequence(4, 5)).toThrow(RangeError);
-    expect(() => nextSequence(2 ** 53 - 1, 0)).toThrow(/sequence exhausted/);
-    expect(() => nextSequence(7, 0, 8)).toThrow(/sequence exhausted/);
-  });
-});
 
 describe("createIdGenerator: construction", () => {
   it("throws on an empty key", () => {
@@ -96,12 +75,6 @@ describe("createIdGenerator: construction", () => {
     ).toThrow(RangeError);
     expect(() => make({ maxFutureSkewSeconds: 0 })).not.toThrow();
   });
-
-  it("checks the test modulus", () => {
-    for (const m of [0, 1.5, 2 ** 53 + 2]) {
-      expect(() => createIdGeneratorWithModulus(KEY, m)).toThrow(RangeError);
-    }
-  });
 });
 
 describe("createIdGenerator: defaults", () => {
@@ -141,6 +114,17 @@ describe("createIdGenerator: defaults", () => {
 });
 
 describe("createIdGenerator: sequence", () => {
+  it("wraps 2^53 - 1 to 0 and keeps counting (no exhaustion guard)", () => {
+    expect(SEQ_MOD).toBe(2 ** 53);
+    const g = make({ sequenceStart: SEQ_MOD - 2 });
+    const sequences = [];
+    for (let i = 0; i < 4; i += 1) {
+      sequences.push(g.decode(g.generate()).sequence);
+    }
+
+    expect(sequences).toStrictEqual([SEQ_MOD - 2, SEQ_MOD - 1, 0, 1]);
+  });
+
   it("honors an explicit sequenceStart and adds 1 per ID", () => {
     const g = make({ sequenceStart: 1000 });
     for (let i = 0; i < 50; i += 1) {
@@ -157,32 +141,6 @@ describe("createIdGenerator: sequence", () => {
       seconds: 1e6 + 3,
       sequence: 8,
     });
-  });
-
-  it("mints every value of a mod-8 generator from start 5, then throws", () => {
-    const g = createIdGeneratorWithModulus(KEY, 8, {
-      now: () => T0,
-      sequenceStart: 5,
-    });
-    const seen = [];
-    for (let i = 0; i < 8; i += 1) {
-      seen.push(g.decode(g.generate()).sequence);
-    }
-
-    expect(seen).toStrictEqual([5, 6, 7, 0, 1, 2, 3, 4]);
-    expect(() => g.generate()).toThrow(/sequence exhausted/);
-    expect(() => g.generate()).toThrow(RangeError);
-  });
-
-  it("checks sequenceStart against the test modulus and reduces RNG starts", () => {
-    expect(() =>
-      createIdGeneratorWithModulus(KEY, 8, { sequenceStart: 8 })
-    ).toThrow(RangeError);
-    const g = createIdGeneratorWithModulus(KEY, 8, {
-      now: () => T0,
-      randomBytes: fixedRng([0, 0, 0, 0, 0, 0, 13]),
-    });
-    expect(g.decode(g.generate()).sequence).toBe(5);
   });
 
   it("gives the SAME ID for same key + generatorId + sequenceStart + second", () => {

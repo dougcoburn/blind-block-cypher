@@ -56,23 +56,6 @@ export interface IdGenerator {
   generate(): string;
 }
 
-/**
- * Pure: the sequence after `current`, `(current + 1) mod modulus`. Throws
- * `RangeError('sequence exhausted')` when that equals `start`.
- */
-export function nextSequence(
-  current: number,
-  start: number,
-  modulus: number = SEQ_MOD
-): number {
-  const next = (current + 1) % modulus;
-  if (next === start) {
-    throw new RangeError("sequence exhausted");
-  }
-
-  return next;
-}
-
 function isIntIn(value: unknown, min: number, maxExclusive: number): boolean {
   return (
     typeof value === "number" &&
@@ -91,30 +74,23 @@ function resolveEpoch(epoch: Date | number | undefined): number {
   return ms;
 }
 
-function randomStart(
-  randomBytes: (n: number) => Uint8Array,
-  modulus: number
-): number {
+function randomStart(randomBytes: (n: number) => Uint8Array): number {
   const buf = Buffer.from(randomBytes(7));
-  // 56 random bits; keep the low 53 (uniform), then reduce for test moduli.
+  // 56 random bits; keep the low 53 (uniform).
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- 7 bytes read below
   const value = (buf[0]! & 0x1f) * TWO_48 + buf.readUIntBE(1, 6);
-  return value % modulus;
+  return value;
 }
 
 /**
- * Like {@link createIdGenerator}, but with a sequence `modulus` other than
- * 2^53 so tests can reach exhaustion. Internal: not exported from the package.
+ * Create an id96 generator: 16-character base64url IDs that encrypt
+ * `seconds:33 | generatorId:10 | sequence:53` under a fixed 20-round,
+ * 96-bit Feistel keyed by `key`.
  */
-export function createIdGeneratorWithModulus(
+export function createIdGenerator(
   key: Uint8Array | string,
-  modulus: number,
   options: IdGeneratorOptions = {}
 ): IdGenerator {
-  if (!Number.isInteger(modulus) || modulus < 1 || modulus > SEQ_MOD) {
-    throw new RangeError("modulus must be an integer in 1..2^53");
-  }
-
   const cipher = createFeistel96(key);
   const epochMs = resolveEpoch(options.epoch);
   const now = options.now ?? Date.now;
@@ -132,20 +108,18 @@ export function createIdGeneratorWithModulus(
     throw new RangeError("maxFutureSkewSeconds must be a number >= 0");
   }
 
-  let start: number;
+  let sequence: number;
   if (options.sequenceStart === undefined) {
-    start = randomStart(randomBytes, modulus);
+    sequence = randomStart(randomBytes);
   } else {
-    if (!isIntIn(options.sequenceStart, 0, modulus)) {
+    if (!isIntIn(options.sequenceStart, 0, SEQ_MOD)) {
       throw new RangeError("sequenceStart must be an integer in 0..2^53-1");
     }
 
-    start = options.sequenceStart;
+    sequence = options.sequenceStart;
   }
 
-  let sequence = start;
   let lastSecond = -1;
-  let exhausted = false;
 
   function decode(id: string, decodeOptions: DecodeOptions = {}): DecodedId {
     const block = Buffer.from(cipher.decrypt(decode16(id)));
@@ -179,10 +153,6 @@ export function createIdGeneratorWithModulus(
       return decode(id).date;
     },
     generate() {
-      if (exhausted) {
-        throw new RangeError("sequence exhausted");
-      }
-
       // A clock that steps back pins to the last minted second.
       const current = Math.floor((now() - epochMs) / 1000);
       const s = Math.max(lastSecond, current);
@@ -202,25 +172,10 @@ export function createIdGeneratorWithModulus(
       const id = encode16(cipher.encrypt(block));
 
       lastSecond = s;
-      try {
-        sequence = nextSequence(sequence, start, modulus);
-      } catch {
-        exhausted = true;
-      }
+      // Plain counter: +1 per ID, wrapping mod 2^53, never reset per second.
+      sequence = (sequence + 1) % SEQ_MOD;
 
       return id;
     },
   };
-}
-
-/**
- * Create an id96 generator: 16-character base64url IDs that encrypt
- * `seconds:33 | generatorId:10 | sequence:53` under a fixed 20-round,
- * 96-bit Feistel keyed by `key`.
- */
-export function createIdGenerator(
-  key: Uint8Array | string,
-  options: IdGeneratorOptions = {}
-): IdGenerator {
-  return createIdGeneratorWithModulus(key, SEQ_MOD, options);
 }

@@ -18,9 +18,8 @@ describe("index", () => {
     expect(new mod.InvalidIdError("x")).toBeInstanceOf(Error);
   });
 
-  it("keeps the u32 API unchanged and test-only helpers private", () => {
+  it("keeps the u32 API unchanged", () => {
     expect(mod.RECOMMENDED_ROUNDS).toBe(8);
     expect(typeof mod.expandKey).toBe("function");
-    expect("createIdGeneratorWithModulus" in mod).toBe(false);
   });
 });
