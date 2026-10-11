@@ -268,7 +268,7 @@ cipher.decrypt64(decodeBase64url(publicId, 64)); // the Snowflake again
 
 ### Dual package (ESM and CommonJS)
 
-The package ships separate ESM (`dist/index.mjs`) and CommonJS (`dist/index.js`) builds, chosen by the `exports` map. If one process loads both, for example your app uses `import` and a dependency uses `require`, it gets two copies of every class. Then `instanceof InvalidIdError` **fails** across the boundary. Check `err.name === "InvalidIdError"` instead.
+The package ships separate ESM (`dist/index.mjs`) and CommonJS (`dist/index.js`) builds, chosen by the `exports` map. If one process loads both, for example your app uses `import` and a dependency uses `require`, `err instanceof InvalidIdError` still works across the boundary: instances carry a shared `Symbol.for` brand. Checking `err.name === "InvalidIdError"` works too.
 
 ## Migrating from 0.1.0
 
@@ -278,7 +278,6 @@ The package ships separate ESM (`dist/index.mjs`) and CommonJS (`dist/index.js`)
 - **Rounds are fixed at 20.** `RECOMMENDED_ROUNDS` and the `rounds` argument are gone.
 - **Low-level exports are removed:** `expandKey`, `deriveRoundKeys`, `RoundKey`, `RoundMaterial`, `createFeistel96`, `Feistel96`, `encryptBlock`, `decryptBlock`. Use `createCipher` and the encoding helpers. `permutation` stays.
 - **New:** `encrypt64` and `encrypt128` widths, `encodeBase64url` / `decodeBase64url`, `createPlainIdGenerator`, `packId` / `unpackId`.
-- **Errors:** check `err.name === "InvalidIdError"` rather than `instanceof` if both builds can load.
 - **Packaging:** an `exports` map replaces deep imports into `dist/`. Public types use `number`, `bigint`, `Uint8Array` and `string` (no `Buffer`). The package now includes an MIT `LICENSE`.
 
 ## Develop

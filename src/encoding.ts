@@ -1,8 +1,34 @@
-/** Thrown when a string is not a well-formed ID, or fails `strictTime`. */
+/** Registry-wide brand, shared by the CJS and ESM builds in one process. */
+const BRAND = Symbol.for("blind-block-cypher.InvalidIdError");
+
+/**
+ * Thrown when a string is not a well-formed ID, or fails `strictTime`.
+ *
+ * `instanceof InvalidIdError` works across the CJS and ESM builds: instances
+ * carry a `Symbol.for` brand that `InvalidIdError[Symbol.hasInstance]` checks.
+ */
 export class InvalidIdError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "InvalidIdError";
+    Object.defineProperty(this, BRAND, { value: true });
+  }
+
+  /**
+   * Brand check for `InvalidIdError` itself, so an error from the other build
+   * matches; subclasses use the normal prototype-chain check.
+   */
+  static [Symbol.hasInstance](value: unknown): boolean {
+    if (
+      this === InvalidIdError &&
+      typeof value === "object" &&
+      value !== null &&
+      (value as Record<symbol, unknown>)[BRAND] === true
+    ) {
+      return true;
+    }
+
+    return Function.prototype[Symbol.hasInstance].call(this, value);
   }
 }
 
