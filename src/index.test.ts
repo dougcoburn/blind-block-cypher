@@ -3,23 +3,17 @@ import { describe, expect, it } from "vitest";
 import * as mod from "./index";
 
 describe("index", () => {
-  it("permutation", () => {
-    expect(mod.permutation(3, 0)).toStrictEqual([0, 1, 2]);
-    expect(mod.permutation(3, 5)).toStrictEqual([2, 1, 0]);
-  });
-
-  it("exports the id96 API", () => {
-    expect(typeof mod.createIdGenerator).toBe("function");
-    expect(typeof mod.createFeistel96).toBe("function");
-    expect(typeof mod.encryptBlock).toBe("function");
-    expect(typeof mod.decryptBlock).toBe("function");
-    expect(typeof mod.deriveRoundKeys).toBe("function");
-    expect(mod.ID96_ROUNDS).toBe(20);
+  it("exports the 0.2.0 API", () => {
+    expect(Object.keys(mod).sort()).toStrictEqual([
+      "CIPHER_ROUNDS",
+      "ID96_ROUNDS",
+      "InvalidIdError",
+      "createCipher",
+      "createIdGenerator",
+    ]);
     expect(new mod.InvalidIdError("x")).toBeInstanceOf(Error);
-  });
-
-  it("keeps the u32 API unchanged", () => {
-    expect(mod.RECOMMENDED_ROUNDS).toBe(8);
-    expect(typeof mod.expandKey).toBe("function");
+    expect(
+      mod.createCipher("k").decrypt32(mod.createCipher("k").encrypt32(1))
+    ).toBe(1);
   });
 });

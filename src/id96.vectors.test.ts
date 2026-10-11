@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { CIPHER_INFO, createCipher } from "./cipher";
 import { decode16, encode16 } from "./encoding";
-import { ID96_INFO, createFeistel96 } from "./feistel96";
 import { DEFAULT_EPOCH_MS, createIdGenerator } from "./generator";
 import { deriveRoundKeys, roundFunction, xor48 } from "./round";
 
@@ -48,6 +48,21 @@ const VECTORS = [
   },
 ];
 /* cspell:enable */
+
+const ID96_INFO = CIPHER_INFO.u96;
+
+/** The id96 block cipher (0.1.0 `createFeistel96`) via createCipher.encrypt96. */
+function feistel96(key: string) {
+  const c = createCipher(key);
+  const toBig = (b: Uint8Array) =>
+    BigInt(`0x${Buffer.from(b).toString("hex")}`);
+  const toBlock = (v: bigint) =>
+    new Uint8Array(Buffer.from(v.toString(16).padStart(24, "0"), "hex"));
+  return {
+    decrypt: (b: Uint8Array) => toBlock(c.decrypt96(toBig(b))),
+    encrypt: (b: Uint8Array) => toBlock(c.encrypt96(toBig(b))),
+  };
+}
 
 function hex(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("hex");
@@ -161,13 +176,26 @@ describe("id96 golden vectors (20 rounds, independent reference)", () => {
       });
 
       // Bit positions: seconds = bits 95..63, generatorId = 62..53, sequence = 52..0.
-      const plain = createFeistel96(KEY).decrypt(decode16(v.id));
+      const plain = feistel96(KEY).decrypt(decode16(v.id));
       expect(hex(plain)).toBe(v.plaintextHex);
       expect(field(plain, 63, 33)).toBe(v.seconds);
       expect(field(plain, 53, 10)).toBe(v.generatorId);
       expect(field(plain, 0, 53)).toBe(v.sequence);
     });
   }
+
+  it("encrypt96 is byte-identical to 0.1.0 encryptBlock on the vectors", () => {
+    const c = createCipher(KEY);
+    for (const v of VECTORS) {
+      const out = c.encrypt96(BigInt(`0x${v.plaintextHex}`));
+      expect(
+        Buffer.from(out.toString(16).padStart(24, "0"), "hex").toString(
+          "base64url"
+        )
+      ).toBe(v.id);
+      expect(c.decrypt96(out)).toBe(BigInt(`0x${v.plaintextHex}`));
+    }
+  });
 
   it("10-round output does NOT match the 20-round vector", () => {
     const keys = deriveRoundKeys(KEY, ID96_INFO, 10, 48);
@@ -192,7 +220,7 @@ describe("id96 golden vectors (20 rounds, independent reference)", () => {
 
 describe("id96 non-affinity", () => {
   it("same-second ciphertext differences reach full rank 96", () => {
-    const f = createFeistel96(KEY);
+    const f = feistel96(KEY);
     expect(rank96(sameSecondDiffs((b) => f.encrypt(b)))).toBe(96);
   });
 

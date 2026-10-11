@@ -4,9 +4,12 @@ import { describe, expect, it } from "vitest";
 import {
   assertHalfBits,
   deriveRoundKeys,
+  deriveRoundKeys64,
   mulMod48,
   mulmix,
+  mulmix64,
   roundFunction,
+  roundFunction64,
   xor48,
 } from "./round";
 
@@ -156,6 +159,47 @@ describe("roundFunction HMAC", () => {
             .readUIntBE(0, bytes);
           expect(roundFunction(r, k, halfBits)).toBe(expected);
         }
+      }
+    }
+  });
+});
+
+describe("64-bit (BigInt) path", () => {
+  const INFO128 = "blind-block-cypher/u128/v1";
+
+  it("rejects an empty key and bad round counts", () => {
+    expect(() => deriveRoundKeys64("", INFO128, 20)).toThrow(/non-empty/);
+    expect(() => deriveRoundKeys64(KEY, INFO128, 0)).toThrow(RangeError);
+  });
+
+  it("derives odd 64-bit multipliers and in-range constants", () => {
+    for (const k of deriveRoundKeys64(KEY, INFO128, 64)) {
+      expect(k.m % 2n).toBe(1n);
+      expect(k.m < 1n << 64n).toBe(true);
+      expect(k.a >= 0n && k.a < 1n << 64n).toBe(true);
+      expect(k.hmacKey).toHaveLength(32);
+    }
+  });
+
+  it("mulmix64 is (r·m + a) mod 2^64", () => {
+    const [k] = deriveRoundKeys64(KEY, INFO128, 1);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- one key
+    const key = k!;
+    const max = (1n << 64n) - 1n;
+    expect(mulmix64(0n, key)).toBe(key.a);
+    expect(mulmix64(max, key)).toBe((max * key.m + key.a) % (1n << 64n));
+  });
+
+  it("roundFunction64 is the first 64 bits of HMAC-SHA256", () => {
+    for (const k of deriveRoundKeys64(KEY, INFO128, 3)) {
+      for (const r of [0n, 1n, (1n << 64n) - 1n]) {
+        const input = Buffer.alloc(8);
+        input.writeBigUInt64BE(mulmix64(r, k));
+        const expected = createHmac("sha256", k.hmacKey)
+          .update(input)
+          .digest()
+          .readBigUInt64BE(0);
+        expect(roundFunction64(r, k)).toBe(expected);
       }
     }
   });
