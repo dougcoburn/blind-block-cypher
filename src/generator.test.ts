@@ -29,7 +29,12 @@ function make(opts: IdGeneratorOptions = {}) {
 
 describe("createIdGenerator: construction", () => {
   it("throws on an empty key", () => {
-    expect(() => createIdGenerator("")).toThrow(/non-empty/);
+    expect(() => createIdGenerator("")).toThrow(RangeError);
+    expect(() => createIdGenerator(new Uint8Array(0))).toThrow(RangeError);
+    expect(() => createIdGenerator(42 as unknown as string)).toThrow(TypeError);
+    expect(() => createIdGenerator(undefined as unknown as string)).toThrow(
+      TypeError
+    );
   });
 
   it("checks generatorId bounds", () => {
