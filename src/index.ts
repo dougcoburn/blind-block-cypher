@@ -1,5 +1,5 @@
 export type { Cipher } from "./cipher";
-export { CIPHER_ROUNDS, ID96_ROUNDS, createCipher } from "./cipher";
+export { CIPHER_ROUNDS, createCipher } from "./cipher";
 export type {
   DecodeOptions,
   DecodedId,

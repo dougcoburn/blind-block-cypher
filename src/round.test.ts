@@ -19,7 +19,7 @@ const TWO_48 = 2 ** 48;
 
 describe("deriveRoundKeys", () => {
   it("rejects an empty key", () => {
-    expect(() => deriveRoundKeys("", INFO, 20, 48)).toThrow(/non-empty/);
+    expect(() => deriveRoundKeys("", INFO, 20, 48)).toThrow(RangeError);
     expect(() => deriveRoundKeys(new Uint8Array(0), INFO, 20, 48)).toThrow(
       /non-empty/
     );
@@ -168,7 +168,7 @@ describe("64-bit (BigInt) path", () => {
   const INFO128 = "blind-block-cypher/u128/v1";
 
   it("rejects an empty key and bad round counts", () => {
-    expect(() => deriveRoundKeys64("", INFO128, 20)).toThrow(/non-empty/);
+    expect(() => deriveRoundKeys64("", INFO128, 20)).toThrow(RangeError);
     expect(() => deriveRoundKeys64(KEY, INFO128, 0)).toThrow(RangeError);
   });
 

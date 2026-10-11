@@ -12,9 +12,6 @@ import {
 /** Fixed Feistel round count for every width. Part of the format. */
 export const CIPHER_ROUNDS = 20;
 
-/** Round count of the id96 format (same as {@link CIPHER_ROUNDS}). */
-export const ID96_ROUNDS = CIPHER_ROUNDS;
-
 /** HKDF info strings, one per block width (domain separation). */
 export const CIPHER_INFO = {
   u32: "blind-block-cypher/u32/v2",
@@ -125,8 +122,8 @@ function lazy<T>(make: () => T): () => T {
 }
 
 /**
- * Create a keyed cipher. `key` is a non-empty string (UTF-8) or `Uint8Array`;
- * an empty key throws. Round keys for each width are derived on first use.
+ * Create a keyed cipher. `key` is a non-empty string (UTF-8) or `Uint8Array`.
+ * A key of any other type throws `TypeError`; an empty key throws `RangeError`. Round keys for each width are derived on first use.
  */
 export function createCipher(key: Uint8Array | string): Cipher {
   const ikm = new Uint8Array(keyBytes(key));

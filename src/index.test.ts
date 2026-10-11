@@ -11,7 +11,6 @@ describe("index", () => {
   it("exports the 0.2.0 API", () => {
     expect(Object.keys(mod).sort()).toStrictEqual([
       "CIPHER_ROUNDS",
-      "ID96_ROUNDS",
       "InvalidIdError",
       "createCipher",
       "createIdGenerator",

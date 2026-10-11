@@ -1,6 +1,6 @@
 // Measures id96 throughput at the fixed 20 rounds. Not part of CI.
 // Usage: pnpm run bench
-import { ID96_ROUNDS, createCipher, createIdGenerator } from "../src/index";
+import { CIPHER_ROUNDS, createCipher, createIdGenerator } from "../src/index";
 
 const DURATION_MS = Number(process.env.BENCH_MS ?? 3000);
 const WARMUP = 5000;
@@ -30,7 +30,7 @@ function run(label: string, fn: () => void): void {
   console.log(
     `${label}: ${rate.toLocaleString("en-US")} ops/sec (${count.toLocaleString(
       "en-US"
-    )} in ${seconds.toFixed(2)}s, ${ID96_ROUNDS} rounds, node ${
+    )} in ${seconds.toFixed(2)}s, ${CIPHER_ROUNDS} rounds, node ${
       process.version
     })`
   );

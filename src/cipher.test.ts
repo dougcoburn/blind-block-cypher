@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  CIPHER_INFO,
-  CIPHER_ROUNDS,
-  ID96_ROUNDS,
-  createCipher,
-} from "./cipher";
+import { CIPHER_INFO, CIPHER_ROUNDS, createCipher } from "./cipher";
 
 // Produced by `node scripts/cipher-reference.mjs`, an independent BigInt
 // implementation with its own ROUNDS = 20. Fake key: never reuse it.
@@ -114,7 +109,6 @@ function affineCipher(w: Width): (x: bigint) => bigint {
 describe("createCipher", () => {
   it("uses 20 rounds and per-width info strings", () => {
     expect(CIPHER_ROUNDS).toBe(20);
-    expect(ID96_ROUNDS).toBe(20);
     expect(CIPHER_INFO).toStrictEqual({
       u32: "blind-block-cypher/u32/v2",
       u64: "blind-block-cypher/u64/v1",
@@ -124,8 +118,23 @@ describe("createCipher", () => {
   });
 
   it("throws on an empty key", () => {
+    expect(() => createCipher("")).toThrow(RangeError);
     expect(() => createCipher("")).toThrow(/non-empty/);
-    expect(() => createCipher(new Uint8Array(0))).toThrow(/non-empty/);
+    expect(() => createCipher(new Uint8Array(0))).toThrow(RangeError);
+  });
+
+  it("throws TypeError for a key that is not a string or Uint8Array", () => {
+    for (const bad of [
+      undefined,
+      null,
+      42,
+      1n,
+      {},
+      [1, 2, 3],
+      new ArrayBuffer(4),
+    ]) {
+      expect(() => createCipher(bad as unknown as string)).toThrow(TypeError);
+    }
   });
 
   it("treats a string key as its UTF-8 bytes", () => {

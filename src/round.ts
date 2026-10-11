@@ -34,11 +34,19 @@ export function assertHalfBits(halfBits: number): void {
   }
 }
 
+/**
+ * Key bytes for HKDF. Throws `TypeError` unless `key` is a string or
+ * `Uint8Array`, and `RangeError` if it is empty.
+ */
 export function keyBytes(key: Uint8Array | string): Buffer {
+  if (typeof key !== "string" && !(key instanceof Uint8Array)) {
+    throw new TypeError("key must be a string or Uint8Array");
+  }
+
   const ikm =
     typeof key === "string" ? Buffer.from(key, "utf8") : Buffer.from(key);
   if (ikm.length === 0) {
-    throw new Error("key must be non-empty");
+    throw new RangeError("key must be non-empty");
   }
 
   return ikm;
