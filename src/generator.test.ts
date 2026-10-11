@@ -1,12 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  DEFAULT_EPOCH_MS,
   type IdGeneratorOptions,
   InvalidIdError,
-  SEQ_MOD,
   createIdGenerator,
 } from "./generator";
+import { DEFAULT_EPOCH_MS, SEQUENCE_MOD as SEQ_MOD } from "./plainGenerator";
 
 const KEY = "generator-test-key-not-for-production";
 const T0 = DEFAULT_EPOCH_MS + 1_000_000_000; // second 1,000,000
@@ -29,7 +28,12 @@ function make(opts: IdGeneratorOptions = {}) {
 
 describe("createIdGenerator: construction", () => {
   it("throws on an empty key", () => {
-    expect(() => createIdGenerator("")).toThrow(/non-empty/);
+    expect(() => createIdGenerator("")).toThrow(RangeError);
+    expect(() => createIdGenerator(new Uint8Array(0))).toThrow(RangeError);
+    expect(() => createIdGenerator(42 as unknown as string)).toThrow(TypeError);
+    expect(() => createIdGenerator(undefined as unknown as string)).toThrow(
+      TypeError
+    );
   });
 
   it("checks generatorId bounds", () => {

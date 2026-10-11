@@ -8,18 +8,30 @@ describe("index", () => {
     expect(mod.permutation(3, 5)).toStrictEqual([2, 1, 0]);
   });
 
-  it("exports the id96 API", () => {
-    expect(typeof mod.createIdGenerator).toBe("function");
-    expect(typeof mod.createFeistel96).toBe("function");
-    expect(typeof mod.encryptBlock).toBe("function");
-    expect(typeof mod.decryptBlock).toBe("function");
-    expect(typeof mod.deriveRoundKeys).toBe("function");
-    expect(mod.ID96_ROUNDS).toBe(20);
+  it("exports the 0.2.0 API", () => {
+    expect(Object.keys(mod).sort()).toStrictEqual([
+      "CIPHER_ROUNDS",
+      "InvalidIdError",
+      "createCipher",
+      "createIdGenerator",
+      "createPlainIdGenerator",
+      "decodeBase64url",
+      "encodeBase64url",
+      "packId",
+      "permutation",
+      "unpackId",
+    ]);
     expect(new mod.InvalidIdError("x")).toBeInstanceOf(Error);
+    expect(
+      mod.createCipher("k").decrypt32(mod.createCipher("k").encrypt32(1))
+    ).toBe(1);
   });
 
-  it("keeps the u32 API unchanged", () => {
-    expect(mod.RECOMMENDED_ROUNDS).toBe(8);
-    expect(typeof mod.expandKey).toBe("function");
+  it("exports the encoding and plain generator API", () => {
+    expect(typeof mod.encodeBase64url).toBe("function");
+    expect(typeof mod.decodeBase64url).toBe("function");
+    expect(typeof mod.createPlainIdGenerator).toBe("function");
+    expect(typeof mod.packId).toBe("function");
+    expect(typeof mod.unpackId).toBe("function");
   });
 });
