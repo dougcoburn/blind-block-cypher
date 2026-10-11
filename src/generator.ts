@@ -1,7 +1,7 @@
 import { randomBytes as nodeRandomBytes } from "node:crypto";
 
+import { createCipher } from "./cipher";
 import { InvalidIdError, decode16, encode16 } from "./encoding";
-import { createFeistel96 } from "./feistel96";
 
 export { InvalidIdError } from "./encoding";
 
@@ -56,6 +56,20 @@ export interface IdGenerator {
   generate(): string;
 }
 
+/** 12-byte big-endian block -> bigint in [0, 2^96). */
+function blockToBigint(block: Uint8Array): bigint {
+  const b = Buffer.from(block.buffer, block.byteOffset, block.length);
+  return (b.readBigUInt64BE(0) << 32n) | BigInt(b.readUInt32BE(8));
+}
+
+/** bigint in [0, 2^96) -> 12-byte big-endian block. */
+function bigintToBlock(v: bigint): Buffer {
+  const b = Buffer.alloc(12);
+  b.writeBigUInt64BE(v >> 32n, 0);
+  b.writeUInt32BE(Number(v & 0xffffffffn), 8);
+  return b;
+}
+
 function isIntIn(value: unknown, min: number, maxExclusive: number): boolean {
   return (
     typeof value === "number" &&
@@ -91,7 +105,7 @@ export function createIdGenerator(
   key: Uint8Array | string,
   options: IdGeneratorOptions = {}
 ): IdGenerator {
-  const cipher = createFeistel96(key);
+  const cipher = createCipher(key);
   const epochMs = resolveEpoch(options.epoch);
   const now = options.now ?? Date.now;
   const randomBytes = options.randomBytes ?? nodeRandomBytes;
@@ -122,7 +136,7 @@ export function createIdGenerator(
   let lastSecond = -1;
 
   function decode(id: string, decodeOptions: DecodeOptions = {}): DecodedId {
-    const block = Buffer.from(cipher.decrypt(decode16(id)));
+    const block = bigintToBlock(cipher.decrypt96(blockToBigint(decode16(id))));
     const hi = block.readUIntBE(0, 6); // seconds:33 | generatorId:10 | seq top 5
     const lo = block.readUIntBE(6, 6); // seq low 48
     const seconds = Math.floor(hi / TWO_15);
@@ -169,7 +183,9 @@ export function createIdGenerator(
       const hi = s * GENERATOR_ID_MOD + generatorId;
       block.writeUIntBE(hi * 32 + Math.floor(sequence / TWO_48), 0, 6);
       block.writeUIntBE(sequence % TWO_48, 6, 6);
-      const id = encode16(cipher.encrypt(block));
+      const id = encode16(
+        bigintToBlock(cipher.encrypt96(blockToBigint(block)))
+      );
 
       lastSecond = s;
       // Plain counter: +1 per ID, wrapping mod 2^53, never reset per second.
