@@ -220,12 +220,18 @@ Low-level exports for tests and tooling: `createFeistel96(key)` (returns `{ encr
 - v1 has **no in-format key rotation**. A key can't be retired while its IDs still need to decode, so changing keys means re-issuing or re-mapping existing IDs yourself.
 - If rotation is ever needed, the planned path is a future v2 format with a 17-character ID that carries a key-version prefix. Length alone separates v1 IDs (16 characters) from v2 IDs (17), so existing v1 IDs would keep decoding with the v1 key.
 
+## Dual package (ESM and CommonJS)
+
+The package ships separate ESM (`dist/index.mjs`) and CommonJS (`dist/index.js`) builds, selected by the `exports` map. If one process loads both, for example your app uses `import` while a dependency uses `require`, it gets two copies of every class. An `InvalidIdError` thrown by one copy is **not** `instanceof` the other copy's `InvalidIdError` (the pack smoke test checks this in CI). If your code can see errors from both builds, check `err.name === "InvalidIdError"` instead of `instanceof`.
+
 ## Install / develop
 
 ```bash
 pnpm install
 pnpm test
 pnpm build
+pnpm run lint:package # publint + attw on the packed tarball (after build)
+pnpm run smoke:pack # require() + import() the packed tarball in one process (after build)
 pnpm run bench # id96 IDs/sec at 20 rounds (not part of CI)
 ```
 
