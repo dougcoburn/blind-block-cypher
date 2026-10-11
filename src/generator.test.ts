@@ -1,12 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  DEFAULT_EPOCH_MS,
   type IdGeneratorOptions,
   InvalidIdError,
-  SEQ_MOD,
   createIdGenerator,
 } from "./generator";
+import { DEFAULT_EPOCH_MS, SEQUENCE_MOD as SEQ_MOD } from "./plainGenerator";
 
 const KEY = "generator-test-key-not-for-production";
 const T0 = DEFAULT_EPOCH_MS + 1_000_000_000; // second 1,000,000

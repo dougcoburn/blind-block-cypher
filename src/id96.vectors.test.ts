@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { CIPHER_INFO, createCipher } from "./cipher";
-import { decode16, encode16 } from "./encoding";
-import { DEFAULT_EPOCH_MS, createIdGenerator } from "./generator";
+import { createIdGenerator } from "./generator";
+import { DEFAULT_EPOCH_MS } from "./plainGenerator";
 import { deriveRoundKeys, roundFunction, xor48 } from "./round";
 
 // Produced by `node scripts/id96-reference.mjs`, an independent BigInt
@@ -50,6 +50,10 @@ const VECTORS = [
 /* cspell:enable */
 
 const ID96_INFO = CIPHER_INFO.u96;
+
+/** 16-char base64url ID <-> 12-byte block (test-side reference via Buffer). */
+const decode16 = (id: string) => new Uint8Array(Buffer.from(id, "base64url"));
+const encode16 = (b: Uint8Array) => Buffer.from(b).toString("base64url");
 
 /** The id96 block cipher (0.1.0 `createFeistel96`) via createCipher.encrypt96. */
 function feistel96(key: string) {
