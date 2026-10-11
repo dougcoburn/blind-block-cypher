@@ -12,6 +12,7 @@
     "dist/*"
   ],
   "scripts": {
+    "bench": "tsup scripts/bench.ts --format cjs --out-dir node_modules/.cache/bench --silent && node node_modules/.cache/bench/bench.js",
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "ci": "pnpm run lint && pnpm run test && pnpm run build",
     "dev": "vitest",
