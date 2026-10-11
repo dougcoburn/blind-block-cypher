@@ -1,6 +1,6 @@
 {
   "name": "blind-block-cypher",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "Keyed Feistel ciphers for ID obfuscation: opaque, locally unique 16-char IDs that hide creation time, plus format-preserving 32-bit integer encryption",
   "keywords": [
     "id",
