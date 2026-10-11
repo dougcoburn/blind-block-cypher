@@ -7,3 +7,4 @@ export type {
   IdGeneratorOptions,
 } from "./generator";
 export { InvalidIdError, createIdGenerator } from "./generator";
+export { default as permutation } from "./permutation";
