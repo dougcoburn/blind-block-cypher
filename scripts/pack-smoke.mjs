@@ -148,7 +148,7 @@ try {
     "CJS and ESM are separate module instances"
   );
 
-  // 5. Dual-package hazard: is an error from one build instanceof the other's class?
+  // 5. Dual package: an error from one build is instanceof the other's class.
   if (
     typeof cjs.InvalidIdError === "function" &&
     typeof esm.InvalidIdError === "function"
@@ -167,15 +167,13 @@ try {
       cjsErr?.name === "InvalidIdError" && esmErr?.name === "InvalidIdError",
       "err.name is InvalidIdError in both builds"
     );
-    console.log(
-      `info CJS error instanceof ESM InvalidIdError: ${
-        cjsErr instanceof esm.InvalidIdError
-      }`
+    check(
+      cjsErr instanceof esm.InvalidIdError,
+      "CJS error is instanceof ESM InvalidIdError"
     );
-    console.log(
-      `info ESM error instanceof CJS InvalidIdError: ${
-        esmErr instanceof cjs.InvalidIdError
-      }`
+    check(
+      esmErr instanceof cjs.InvalidIdError,
+      "ESM error is instanceof CJS InvalidIdError"
     );
   } else {
     warnings.push(
