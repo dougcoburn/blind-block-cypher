@@ -1,10 +1,28 @@
 {
   "name": "blind-block-cypher",
   "version": "0.0.10",
-  "description": "",
-  "keywords": [],
+  "description": "Keyed Feistel ciphers for ID obfuscation: opaque, locally unique 16-char IDs that hide creation time, plus format-preserving 32-bit integer encryption",
+  "keywords": [
+    "id",
+    "unique-id",
+    "nanoid",
+    "snowflake",
+    "feistel",
+    "format-preserving-encryption",
+    "obfuscation",
+    "hmac",
+    "skip32"
+  ],
+  "homepage": "https://github.com/dougcoburn/blind-block-cypher#readme",
+  "bugs": {
+    "url": "https://github.com/dougcoburn/blind-block-cypher/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dougcoburn/blind-block-cypher.git"
+  },
   "license": "MIT",
-  "author": "",
+  "author": "Doug Coburn",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
