@@ -14,11 +14,24 @@ describe("index", () => {
       "InvalidIdError",
       "createCipher",
       "createIdGenerator",
+      "createPlainIdGenerator",
+      "decodeBase64url",
+      "encodeBase64url",
+      "packId",
       "permutation",
+      "unpackId",
     ]);
     expect(new mod.InvalidIdError("x")).toBeInstanceOf(Error);
     expect(
       mod.createCipher("k").decrypt32(mod.createCipher("k").encrypt32(1))
     ).toBe(1);
+  });
+
+  it("exports the encoding and plain generator API", () => {
+    expect(typeof mod.encodeBase64url).toBe("function");
+    expect(typeof mod.decodeBase64url).toBe("function");
+    expect(typeof mod.createPlainIdGenerator).toBe("function");
+    expect(typeof mod.packId).toBe("function");
+    expect(typeof mod.unpackId).toBe("function");
   });
 });
