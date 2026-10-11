@@ -1,6 +1,6 @@
 export type { Cipher } from "./cipher";
 export { CIPHER_ROUNDS, createCipher } from "./cipher";
-export type { Base64urlWidth } from "./encoding";
+export type { Base64urlBits } from "./encoding";
 export { decodeBase64url, encodeBase64url } from "./encoding";
 export type {
   DecodeOptions,
