@@ -1,6 +1,13 @@
 // Measures id96 throughput at the fixed 20 rounds. Not part of CI.
 // Usage: pnpm run bench
-import { CIPHER_ROUNDS, createCipher, createIdGenerator } from "../src/index";
+import {
+  CIPHER_ROUNDS,
+  createCipher,
+  createIdGenerator,
+  createPlainIdGenerator,
+  decodeBase64url,
+  encodeBase64url,
+} from "../src/index";
 
 const DURATION_MS = Number(process.env.BENCH_MS ?? 3000);
 const WARMUP = 5000;
@@ -47,3 +54,10 @@ run("encrypt32", () => (x = cipher.encrypt32(x)));
 run("encrypt64", () => (big = cipher.encrypt64(big & 0xffffffffffffffffn)));
 run("encrypt96", () => (big = cipher.encrypt96(big)));
 run("encrypt128", () => (big = cipher.encrypt128(big)));
+
+const plain = createPlainIdGenerator();
+run("plain next", () => plain.next());
+const block = plain.next();
+const encoded = encodeBase64url(block, 96);
+run("encodeBase64url 96", () => encodeBase64url(block, 96));
+run("decodeBase64url 96", () => decodeBase64url(encoded, 96));
