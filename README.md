@@ -2,7 +2,13 @@
 
 Keyed, format-preserving block ciphers for ID obfuscation, plus the pieces to mint opaque, URL-safe IDs that hide when they were created.
 
-0.2.0 splits the library into three independent layers:
+## ⚠️ Disclaimer
+
+- **No warranty or support.** This is a hobby project. Feel free to copy or fork as needed.
+- **Zero cryptanalysis.** The ciphers here have had no cryptanalysis. If you need standardized algorithms, use a library such as [dealcode](https://www.npmjs.com/package/dealcode) (NIST SP 800-38G FF1).
+- **Not standardized or externally reviewed.**
+
+Version 0.2.0 splits the library into three independent layers:
 
 | Layer     | Keyed? | What it does                                                                   |
 | --------- | ------ | ------------------------------------------------------------------------------ |
