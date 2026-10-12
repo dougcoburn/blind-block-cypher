@@ -1,5 +1,11 @@
 # blind-block-cypher
 
+## 0.2.1
+
+### Patch Changes
+
+- 061c5ed: Add a disclaimer to the README: no warranty or support, no cryptanalysis, not standardized or externally reviewed.
+
 ## 0.2.0
 
 ### Minor Changes
